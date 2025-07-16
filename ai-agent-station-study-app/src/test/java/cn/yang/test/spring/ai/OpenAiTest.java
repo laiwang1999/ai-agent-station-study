@@ -32,28 +32,56 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
+/**
+ * +  * OpenAI模型功能测试类
+ * +  * 测试包括文本生成、图像识别、流式响应、文档向量存储和RAG增强对话等功能
+ * +
+ */
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class OpenAiTest {
 
+    /**
+     * 测试用图片资源
+     */
     @Value("classpath:data/dog.png")
     private Resource imageResource;
 
+    /**
+     * 测试用文本资源
+     */
     @Value("classpath:data/file.txt")
     private Resource textResource;
 
+    /**
+     * 文章提示词资源
+     */
     @Value("classpath:data/article-prompt-words.txt")
     private Resource articlePromptWordsResource;
 
+    /**
+     * OpenAI聊天模型实例
+     */
     @Autowired
     private OpenAiChatModel openAiChatModel;
 
+    /**
+     * PGVector向量存储实例
+     */
     @Autowired
     private PgVectorStore pgVectorStore;
 
+    /**
+     * 文本分块器，用于文档处理
+     */
     private final TokenTextSplitter tokenTextSplitter = new TokenTextSplitter();
 
+    /**
+     * +      * 测试基本文本生成功能
+     * +      * 向GPT-4o模型发送简单计算请求并验证响应
+     * +
+     */
     @Test
     public void test_call() {
         ChatResponse response = openAiChatModel.call(new Prompt(
@@ -64,6 +92,11 @@ public class OpenAiTest {
         log.info("测试结果(call):{}", JSON.toJSONString(response));
     }
 
+    /**
+     * +      * 测试图像识别功能
+     * +      * 向GPT-4o模型发送图片并请求描述内容和用途
+     * +
+     */
     @Test
     public void test_call_images() {
         UserMessage userMessage = UserMessage.builder()
@@ -83,6 +116,11 @@ public class OpenAiTest {
         log.info("测试结果(images):{}", JSON.toJSONString(response));
     }
 
+    /**
+     * +      * 测试流式响应功能
+     * +      * 使用CountDownLatch等待异步流式响应完成
+     * +
+     */
     @Test
     public void test_stream() throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -108,6 +146,11 @@ public class OpenAiTest {
         countDownLatch.await();
     }
 
+    /**
+     * +      * 测试文档上传到向量存储功能
+     * +      * 将文本文件内容分割后存入PGVector向量数据库
+     * +
+     */
     @Test
     public void upload() {
         // textResource、articlePromptWordsResource
@@ -122,6 +165,11 @@ public class OpenAiTest {
         log.info("上传完成");
     }
 
+    /**
+     * +      * 测试RAG增强对话功能
+     * +      * 结合向量存储中的文档上下文回答用户问题
+     * +
+     */
     @Test
     public void chat() {
         String message = "王大瓜今年几岁";

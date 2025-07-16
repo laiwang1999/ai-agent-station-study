@@ -35,24 +35,48 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * AI智能体测试类，用于测试基于Spring AI的智能代理功能
+ * 包括模型初始化、对话交互、工具调用和RAG增强等核心功能测试
+ */
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class AiAgentTest {
 
+    /**
+     * OpenAI聊天模型实例
+     */
     private ChatModel chatModel;
 
+    /**
+     * 聊天客户端实例，用于构建和发送对话请求
+     */
     private ChatClient chatClient;
 
+    /**
+     * PGVector向量存储，用于RAG相关功能测试
+     */
     @Resource
     private PgVectorStore vectorStore;
 
+    /**
+     * 聊天记忆对话ID参数键
+     */
     public static final String CHAT_MEMORY_CONVERSATION_ID_KEY = "chat_memory_conversation_id";
+    /**
+     * 聊天记忆响应大小参数键
+     */
     public static final String CHAT_MEMORY_RETRIEVE_SIZE_KEY = "chat_memory_response_size";
 
+    /**
+     * 测试初始化方法，在每个测试方法执行前运行
+     * 初始化OpenAI API客户端、聊天模型和聊天客户端
+     */
     @Before
     public void init() {
 
+        // 创建OpenAI API客户端，配置自定义API地址和密钥
         OpenAiApi openAiApi = OpenAiApi.builder()
                 .baseUrl("https://ai.nengyongai.cn")
                 .apiKey("sk-yrwkgKbEjqfKOw85E0KAoSO9hqCVsY8cvX5U554Ii3SShEPH")
@@ -60,6 +84,7 @@ public class AiAgentTest {
                 .embeddingsPath("v1/embeddings")
                 .build();
 
+        // 构建OpenAI聊天模型，配置默认参数和工具回调
         chatModel = OpenAiChatModel.builder()
                 .openAiApi(openAiApi)
                 .defaultOptions(OpenAiChatOptions.builder()
@@ -68,6 +93,7 @@ public class AiAgentTest {
                         .build())
                 .build();
 
+        // 构建聊天客户端，配置系统提示、记忆管理和RAG增强
         chatClient = ChatClient.builder(chatModel)
                 .defaultSystem("""
                         	 你是一个 AI Agent 智能体，可以根据用户输入信息生成文章，并发送到 CSDN 平台以及完成微信公众号消息通知，今天是 {current_date}。
@@ -80,7 +106,7 @@ public class AiAgentTest {
                         	 3. 获取发送到 CSDN 文章的 URL 地址。
                         	 4. 微信公众号消息通知，平台：CSDN、主题：为文章标题、描述：为文章简述、跳转地址：从发布文章到CSDN获取 URL 地址
                         """)
-//                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(stdioMcpClient(), sseMcpClient01(), sseMcpClient02()).getToolCallbacks())
+                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(stdioMcpClient(), sseMcpClient01(), sseMcpClient02()).getToolCallbacks())
                 .defaultAdvisors(
                         PromptChatMemoryAdvisor.builder(
                                 MessageWindowChatMemory.builder()
@@ -95,6 +121,10 @@ public class AiAgentTest {
                 .build();
     }
 
+    /**
+     * 测试聊天模型流式响应功能
+     * 通过CountDownLatch等待异步流处理完成
+     */
     @Test
     public void test_chat_model_stream_01() throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -103,7 +133,8 @@ public class AiAgentTest {
                 .messages(new UserMessage(
                         """
                                 有哪些工具可以使用
-                                """))
+                                """
+                ))
                 .build();
 
         // 非流式，chatModel.call(prompt)
@@ -124,13 +155,18 @@ public class AiAgentTest {
         countDownLatch.await();
     }
 
+    /**
+     * 测试聊天模型普通调用功能
+     * 同步获取并记录模型响应结果
+     */
     @Test
     public void test_chat_model_call() {
         Prompt prompt = Prompt.builder()
                 .messages(new UserMessage(
                         """
                                 有哪些工具可以使用
-                                """))
+                                """
+                ))
                 .build();
 
         ChatResponse chatResponse = chatModel.call(prompt);
@@ -138,6 +174,10 @@ public class AiAgentTest {
         log.info("测试结果(call):{}", JSON.toJSONString(chatResponse));
     }
 
+    /**
+     * 测试基本对话功能
+     * 使用聊天客户端处理用户问题并输出结果
+     */
     @Test
     public void test_02() {
         String userInput = "王大瓜今年几岁";
@@ -148,8 +188,14 @@ public class AiAgentTest {
                 .call().content());
     }
 
+    /**
+     * 测试AI提示词优化和文章生成流程
+     * 1. 使用提示词优化专家角色生成高质量文章提示
+     * 2. 使用AI Agent智能体根据优化后的提示生成并发布文章
+     */
     @Test
     public void test_client03() {
+        // 创建提示词优化专家聊天客户端
         ChatClient chatClient01 = ChatClient.builder(chatModel)
                 .defaultSystem("""
                         你是一个专业的AI提示词优化专家。请帮我优化以下prompt，并按照以下格式返回：
@@ -228,9 +274,9 @@ public class AiAgentTest {
                         .build())
                 .build();
 
+        // 获取优化后的文章提示词
         String content = chatClient01
                 .prompt("生成一篇文章")
-
                 .system(s -> s.param("current_date", LocalDate.now().toString()))
                 .advisors(a -> a
                         .param(CHAT_MEMORY_CONVERSATION_ID_KEY, "chatId-101")
@@ -239,6 +285,7 @@ public class AiAgentTest {
 
         System.out.println("\n>>> ASSISTANT: " + content);
 
+        // 创建文章生成和发布AI Agent
         ChatClient chatClient02 = ChatClient.builder(chatModel)
                 .defaultSystem("""
                         	 你是一个 AI Agent 智能体，可以根据用户输入信息生成文章，并发送到 CSDN 平台以及完成微信公众号消息通知，今天是 {current_date}。
@@ -265,6 +312,7 @@ public class AiAgentTest {
                         .build())
                 .build();
 
+        // 使用优化后的提示词生成并发布文章
         String userInput = "生成一篇文章，要求如下 \r\n" + content;
         System.out.println("\n>>> QUESTION: " + userInput);
         System.out.println("\n>>> ASSISTANT: " + chatClient02
@@ -276,6 +324,12 @@ public class AiAgentTest {
                 .call().content());
     }
 
+    /**
+     * 创建基于标准输入输出的MCP客户端
+     * 用于本地文件系统操作的工具调用
+     *
+     * @return McpSyncClient实例
+     */
     public McpSyncClient stdioMcpClient() {
 
         // based on
@@ -295,6 +349,12 @@ public class AiAgentTest {
 
     }
 
+    /**
+     * 创建基于SSE的MCP客户端（端口8102）
+     * 用于远程工具调用和服务交互
+     *
+     * @return McpSyncClient实例
+     */
     public McpSyncClient sseMcpClient01() {
 
         HttpClientSseClientTransport sseClientTransport = HttpClientSseClientTransport.builder("http://117.72.216.135:8102").build();
@@ -307,6 +367,12 @@ public class AiAgentTest {
         return mcpSyncClient;
     }
 
+    /**
+     * 创建基于SSE的MCP客户端（端口8101）
+     * 用于远程工具调用和服务交互
+     *
+     * @return McpSyncClient实例
+     */
     public McpSyncClient sseMcpClient02() {
 
         HttpClientSseClientTransport sseClientTransport = HttpClientSseClientTransport.builder("http://117.72.216.135:8101").build();
