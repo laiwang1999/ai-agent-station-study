@@ -1,0 +1,101 @@
+# /usr/local/bin/docker-compose -f /docs/dev-ops/environment/environment-docker-compose-2.4.yml up -d
+version: '3.8'
+# docker-compose -f docker-compose-app.yml up -d
+# 你需要修改system为你自身系统的仓库名
+services:
+#  # 部署前端项目
+#  ai-agent-station-front:
+#    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/nginx:latest
+#    container_name: ai-agent-station-front
+#    restart: always
+#    ports:
+#      - '80:80'
+#    volumes:
+#      - ./nginx/html:/usr/share/nginx/html
+#    privileged: true
+
+  mcp-server-csdn-app:
+    #    image: fuzhengwei/mcp-server-csdn-app:1.1
+    image: crpi-beiibk8s7i8k5bws.cn-hangzhou.personal.cr.aliyuncs.com/yang125root/mcp-server-csdn-app:1.0
+    container_name: mcp-server-csdn-app
+    restart: always
+    ports:
+      - "8101:8101"
+    volumes:
+      - ./log:/data/log
+    environment:
+      - TZ=PRC
+      - SERVER_PORT=8101
+      - CSDN_API_CATEGORIES=Java专业面试
+      - CSDN_API_COOKIE=uuid_tt_dd=10_21020682480-1748745038826-982974; fid=20_65622356989-1748745032378-510447; UserName=Young_Naive; UserInfo=615f0b75c00a4b39ae39351682449d54; UserToken=615f0b75c00a4b39ae39351682449d54; UserNick=%E6%9D%A5%E6%97%BA; AU=1E0; UN=Young_Naive; BT=1748745674663; p_uid=U010000; csdn_newcert_Young_Naive=1; _ga=GA1.1.1456572159.1749023334; _ga_7W1N0GEY1P=GS2.1.s1749047458$o4$g0$t1749047458$j60$l0$h0; c_ab_test=1; FCNEC=%5B%5B%22AKsRol98ZLYlPxhVPnanqt6Gdd5vgjocmBmbLfp0llESpBcwEeK1Pg011IlpmxQtdTzUl72MUKXRirW5AcCwW4bhlqC2P_y5rDSimH-433AJLQSN0cYy7mmSMzM4s1FX-nv9cBRIE1GnaBRKk0H18XImTK0Ikh1pfA%3D%3D%22%5D%5D; _clck=oyxu6n%7C2%7Cfxl%7C0%7C1978; __gads=ID=d97b2f1f4d270e6c:T=1748745041:RT=1752586877:S=ALNI_MbZep1CwXS3J3bnLyazLNZhnvIqqw; __gpi=UID=0000110a1e63aca7:T=1748745041:RT=1752586877:S=ALNI_MaKr7WdNdyeSNMH0pn_jd9OhSfnnQ; __eoi=ID=53071010a2f9c76f:T=1748745041:RT=1752586877:S=AA-AfjZU6TwJB0YMtO9R7_R9HB5Q; c_segment=14; dc_sid=8cc094fcf9a20ca3c857423450d35b76; Hm_lvt_6bcd52f51e9b3dce32bec4a3997715ac=1752411308,1752418722,1752586876,1752648784; HMACCOUNT=91333EC56969F9DB; dc_session_id=10_1752653616742.661753; c_first_ref=default; c_first_page=https%3A//mp.csdn.net/mp_blog/manage/article%3Fspm%3D1015.2103.3001.5298; c_dsid=11_1752653617493.747821; creativeSetApiNew=%7B%22toolbarImg%22%3A%22https%3A//img-home.csdnimg.cn/images/20230921102607.png%22%2C%22publishSuccessImg%22%3A%22https%3A//img-home.csdnimg.cn/images/20240229024608.png%22%2C%22articleNum%22%3A138%2C%22type%22%3A2%2C%22oldUser%22%3Atrue%2C%22useSeven%22%3Afalse%2C%22oldFullVersion%22%3Atrue%2C%22userName%22%3A%22Young_Naive%22%7D; creative_btn_mp=3; c_pref=https%3A//mp.csdn.net/; c_ref=https%3A//editor.csdn.net/; c_page_id=default; Hm_lpvt_6bcd52f51e9b3dce32bec4a3997715ac=1752653622; log_Id_pv=3; log_Id_view=72; dc_tos=szhg74; log_Id_click=3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my-network
+
+  mcp-server-weixin-app:
+    #    image: fuzhengwei/mcp-server-weixin-app:1.1
+    image: crpi-beiibk8s7i8k5bws.cn-hangzhou.personal.cr.aliyuncs.com/yang125root/mcp-server-weixin-app:1.0
+    container_name: mcp-server-weixin-app
+    restart: always
+    ports:
+      - "8102:8102"
+    volumes:
+      - ./log:/data/log
+    environment:
+      - TZ=PRC
+      - SERVER_PORT=8102
+      - WEIXIN_API_ORIGINAL_ID=gh_e067c267e056
+      - WEIXIN_API_APP_ID=wx174f2aa965362b41
+      - WEIXIN_API_APP_SECRET=e7309f8f288991e97069fec80714e8a6
+      - WEIXIN_API_TEMPLATE_ID=O8qI6gy75F-bXfPiQugInTMLA0MRzaMff9WSBb16cFk
+      - WEIXIN_API_TOUSER=or0Ab6ivwmypESVp_bYuk92T6SvU
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my-network
+
+  # 注意；因为 ai agent 配置了联网能力，需要部署应用后，手动安装 playwright
+  # 进入后端 docker exec -it ai-agent-station-app /bin/bash
+  # 手动安装（1）；npx playwright@1.52.0 install-deps
+  # 手动安装（2）；npx playwright@1.52.0 install
+  ai-agent-station-app:
+#    image: fuzhengwei/ai-agent-station-app:1.0.1
+    image: registry.cn-hangzhou.aliyuncs.com/fuzhengwei/ai-agent-station-app:1.0.1
+    container_name: ai-agent-station-app
+    restart: on-failure
+    ports:
+      - "8091:8091"
+    environment:
+      - TZ=PRC
+      - SERVER_PORT=8091
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ai-agent-station?serverTimezone=UTC&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_VECTORSTORE_PGVECTOR_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_VECTORSTORE_PGVECTOR_DATASOURCE_USERNAME=postgres
+      - SPRING_VECTORSTORE_PGVECTOR_DATASOURCE_PASSWORD=postgres
+      - SPRING_VECTORSTORE_PGVECTOR_DATASOURCE_URL=jdbc:postgresql://vector_db:5432/ai-rag-knowledge?connectTimeout=120
+      - SPRING_AI_OPENAI_BASE_URL=https://ai.nengyongai.cn
+      - SPRING_AI_OPENAI_API_KEY=sk-yrwkgKbEjqfKOw85E0KAoSO9hqCVsY8cvX5U554Ii3SShEPH
+    volumes:
+      - ./log:/data/log
+      - ./mcp:/Users/fuzhengwei/Desktop
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge

@@ -8,6 +8,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>ai-agent-station-study-api</module>
         <module>ai-agent-station-study-app</module>
         <module>ai-agent-station-study-domain</module>
         <module>ai-agent-station-study-trigger</module>
@@ -30,10 +31,10 @@
     </repositories>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -56,7 +57,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.12</version>
+        <version>3.4.3</version>
     </parent>
 
     <dependencyManagement>
@@ -64,7 +65,7 @@
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>2.1.4</version>
+                <version>3.0.4</version>
             </dependency>
             <!-- # 多数据源路由配置
                  # mysql 5.x driver-class-name: com.mysql.jdbc.Driver    mysql-connector-java 5.1.34
@@ -72,7 +73,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>8.0.22</version>
+                <version>8.0.28</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
@@ -115,7 +116,21 @@
                 <version>1.15</version>
             </dependency>
 
+            <!-- spring ai 1.0.0 https://central.sonatype.com/artifact/org.springframework.ai/spring-ai-bom -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- 工程模块 -->
+            <dependency>
+                <groupId>cn.yang</groupId>
+                <artifactId>ai-agent-station-study-api</artifactId>
+                <version>1.0</version>
+            </dependency>
             <dependency>
                 <groupId>cn.yang</groupId>
                 <artifactId>ai-agent-station-study-domain</artifactId>
