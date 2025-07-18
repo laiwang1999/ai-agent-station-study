@@ -1,6 +1,9 @@
 package cn.yang.domain.agent.model.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -13,6 +16,9 @@ import java.util.List;
  * @since 2025/6/27
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ArmoryCommandEntity {
 
     /**
