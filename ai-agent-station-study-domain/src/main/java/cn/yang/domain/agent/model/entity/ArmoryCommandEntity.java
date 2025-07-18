@@ -1,5 +1,6 @@
 package cn.yang.domain.agent.model.entity;
 
+import cn.yang.domain.agent.model.valobj.AiAgentEnumVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,12 +9,10 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 装配命令实体 - 用于管理AI代理的武器化指令配置
- * <p>
- * 该实体包含指令类型和关联的客户端/模型ID列表，用于在武器化过程中组合不同AI能力
+ * 装配命令
  *
  * @author xiaofuge bugstack.cn @小傅哥
- * @since 2025/6/27
+ * 2025/6/27 07:26
  */
 @Data
 @Builder
@@ -22,23 +21,26 @@ import java.util.List;
 public class ArmoryCommandEntity {
 
     /**
-     * 命令类型 - 定义武器化指令的操作类型
-     * <p>
-     * 示例值：
-     * - DEPLOY: 部署指令
-     * - CONFIG: 配置指令
-     * - EXECUTE: 执行指令
+     * 命令类型 AiAgentEnumVO.getCode
      */
     private String commandType;
 
     /**
-     * 命令索引列表 - 存储关联的客户端/模型ID集合
-     * <p>
-     * 格式要求：
-     * - 每个ID必须符合UUIDv4规范
-     * - 列表最大长度不超过20个元素
-     * - 空列表表示未绑定具体目标
+     * 命令索引（clientId、modelId、apiId...）
      */
     private List<String> commandIdList;
+
+    /**
+     * 根据 commandType 获取对应的数据加载策略字符串。
+     * 通过调用 AiAgentEnumVO 枚举类的 getByCode 方法，获取枚举实例，
+     * 然后返回该实例的 loadDataStrategy 字段值。
+     * <p>
+     * 注意：commandType 必须是有效的枚举编码，否则可能引发异常。
+     *
+     * @return 返回对应的加载数据策略字符串
+     */
+    public String getLoadDataStrategy() {
+        return AiAgentEnumVO.getByCode(commandType).getLoadDataStrategy();
+    }
 
 }
