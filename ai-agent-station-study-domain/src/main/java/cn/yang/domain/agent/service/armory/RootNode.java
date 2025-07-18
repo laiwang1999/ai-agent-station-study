@@ -1,12 +1,5 @@
 package cn.yang.domain.agent.service.armory;
 
-/**
- * @version v1.0
- * @ClassName: cn.yang.domain.agent.service.armory
- * @Description: TODO
- * @Author: YJ
- */
-
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
 import cn.yang.domain.agent.service.armory.business.data.ILoadDataStrategy;
@@ -16,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 根节点，数据加载

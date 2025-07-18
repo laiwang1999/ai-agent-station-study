@@ -34,7 +34,8 @@ public abstract class AbstractArmorySupport extends AbstractMultiThreadStrategyR
     protected IAgentRepository repository;
 
     @Override
-    protected void multiThread(ArmoryCommandEntity requestParameter, DefaultArmoryStrategyFactory.DynamicContext dynamicContext) throws ExecutionException, InterruptedException, TimeoutException {
+    protected void multiThread(ArmoryCommandEntity requestParameter,
+                               DefaultArmoryStrategyFactory.DynamicContext dynamicContext) throws ExecutionException, InterruptedException, TimeoutException {
         // 缺省的
     }
 

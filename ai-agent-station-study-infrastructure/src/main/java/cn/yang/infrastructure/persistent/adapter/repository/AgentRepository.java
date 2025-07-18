@@ -1,6 +1,19 @@
 package cn.yang.infrastructure.persistent.adapter.repository;
 
 import cn.yang.domain.agent.adapter.repository.IAgentRepository;
+
+/**
+ * AI代理仓储实现类
+ * <p>
+ * 职责说明：
+ * 1. 实现领域层定义的仓储接口，完成AI代理相关数据的持久化操作
+ * 2. 协调多个DAO组件完成复杂的数据聚合查询
+ * 3. 实现数据库PO对象与领域VO对象之间的转换
+ * 4. 处理配置数据的级联查询和状态过滤逻辑
+ * </p>
+ * @author xiaofuge bugstack.cn @小傅哥
+ * @since 2025/6/28
+ */
 import cn.yang.domain.agent.model.valobj.*;
 import cn.yang.infrastructure.persistent.dao.*;
 import cn.yang.infrastructure.persistent.po.*;
@@ -27,21 +40,29 @@ import static cn.yang.domain.agent.model.valobj.AiAgentEnumVO.AI_CLIENT_MODEL;
 @Repository
 public class AgentRepository implements IAgentRepository {
 
+    // region DAO组件注入
+
+    /** 代理主体DAO，负责ai_agent表的基础CRUD操作 */
     @Resource
     private IAiAgentDao aiAgentDao;
 
+    /** 代理流程配置DAO，管理代理工作流的节点配置 */
     @Resource
     private IAiAgentFlowConfigDao aiAgentFlowConfigDao;
 
+    /** 代理任务调度DAO，处理定时任务相关的持久化操作 */
     @Resource
     private IAiAgentTaskScheduleDao aiAgentTaskScheduleDao;
 
+    /** 客户端顾问配置DAO，维护advisor类型的配置信息 */
     @Resource
     private IAiClientAdvisorDao aiClientAdvisorDao;
 
+    /** API配置DAO，管理第三方API的接入凭证和端点信息 */
     @Resource
     private IAiClientApiDao aiClientApiDao;
 
+    /** 客户端配置关系DAO，处理client与其他实体的关联关系 */
     @Resource
     private IAiClientConfigDao aiClientConfigDao;
 
@@ -61,6 +82,20 @@ public class AgentRepository implements IAgentRepository {
     private IAiClientToolMcpDao aiClientToolMcpDao;
 
     @Override
+    /**
+     * 根据客户端ID列表查询关联的API配置
+     * 
+     * @param clientIdList 客户端ID列表，支持批量查询
+     * @return 有效的API配置值对象列表，包含：
+     *         - API基础路径
+     *         - 认证密钥
+     *         - 补全接口路径
+     *         - 嵌入接口路径
+     * @implNote 实现逻辑：
+     * 1. 状态过滤：只查询状态为启用的配置(status=1)
+     * 2. 级联查询：client→model→api三级关联查询
+     * 3. 去重处理：确保相同API配置只返回一次
+     */
     public List<AiClientApiVO> queryAiClientApiVOListByClientIds(List<String> clientIdList) {
         if (clientIdList == null || clientIdList.isEmpty()) {
             return List.of();
@@ -107,6 +142,19 @@ public class AgentRepository implements IAgentRepository {
     }
 
     @Override
+    /**
+     * 获取客户端关联的模型配置
+     * 
+     * @param clientIdList 客户端ID列表
+     * @return 模型配置值对象列表，包含：
+     *         - 模型ID
+     *         - 关联的API配置ID
+     *         - 模型类型
+     * @implSpec 该方法会跳过以下情况：
+     *         1. 无效的客户端ID
+     *         2. 非模型类型的配置项
+     *         3. 已禁用(status≠1)的配置
+     */
     public List<AiClientModelVO> AiClientModelVOByClientIds(List<String> clientIdList) {
         if (clientIdList == null || clientIdList.isEmpty()) {
             return List.of();
@@ -232,37 +280,58 @@ public class AgentRepository implements IAgentRepository {
         return result;
     }
 
+    /**
+     * 根据客户端ID列表查询关联的智能体顾问配置
+     *
+     * @param clientIdList 客户端ID列表
+     * @return 顾问配置值对象列表，包含：
+     *         1. 对话记忆配置（ChatMemory）
+     *         2. RAG回答配置（RagAnswer）
+     *         3. 基础顾问信息
+     */
     @Override
     public List<AiClientAdvisorVO> AiClientAdvisorVOByClientIds(List<String> clientIdList) {
+        // 参数校验
         if (clientIdList == null || clientIdList.isEmpty()) {
             return List.of();
         }
 
         List<AiClientAdvisorVO> result = new ArrayList<>();
-        Set<String> processedAdvisorIds = new HashSet<>();
+        Set<String> processedAdvisorIds = new HashSet<>(); // 已处理顾问ID集合，用于去重
 
+        // 遍历客户端ID列表
         for (String clientId : clientIdList) {
-            // 1. 查询客户端相关的advisor配置
+            // 1. 查询客户端关联的配置项（配置类型为advisor）
             List<AiClientConfig> configs = aiClientConfigDao.queryBySourceTypeAndId("client", clientId);
 
             for (AiClientConfig config : configs) {
+                // 过滤无效配置：状态非启用 或 配置类型不匹配
                 if (config.getStatus() != 1 || !"advisor".equals(config.getTargetType())) {
                     continue;
                 }
 
                 String advisorId = config.getTargetId();
+                // 跳过已处理的顾问配置
                 if (processedAdvisorIds.contains(advisorId)) {
                     continue;
                 }
                 processedAdvisorIds.add(advisorId);
 
-                // 2. 查询advisor详细信息
+                // 2. 查询顾问主体信息
                 AiClientAdvisor aiClientAdvisor = aiClientAdvisorDao.queryByAdvisorId(advisorId);
+                // 过滤无效的顾问配置
                 if (aiClientAdvisor == null || aiClientAdvisor.getStatus() != 1) {
                     continue;
                 }
 
-                // 3. 解析extParam中的配置
+                /*
+                 * 3. 解析扩展参数配置逻辑
+                 * ----------------------------------------
+                 * 根据不同的顾问类型解析对应的配置项：
+                 * - ChatMemory: 对话记忆配置
+                 * - RagAnswer: RAG回答配置
+                 * 使用FastJSON进行JSON反序列化，异常时保持null值
+                 */
                 AiClientAdvisorVO.ChatMemory chatMemory = null;
                 AiClientAdvisorVO.RagAnswer ragAnswer = null;
 
@@ -270,25 +339,26 @@ public class AgentRepository implements IAgentRepository {
                 if (extParam != null && !extParam.trim().isEmpty()) {
                     try {
                         if ("ChatMemory".equals(aiClientAdvisor.getAdvisorType())) {
-                            // 解析chatMemory配置
+                            // 反序列化对话记忆配置
                             chatMemory = JSON.parseObject(extParam, AiClientAdvisorVO.ChatMemory.class);
                         } else if ("RagAnswer".equals(aiClientAdvisor.getAdvisorType())) {
-                            // 解析ragAnswer配置
+                            // 反序列化RAG回答配置
                             ragAnswer = JSON.parseObject(extParam, AiClientAdvisorVO.RagAnswer.class);
                         }
                     } catch (Exception e) {
-                        // 解析失败时忽略，使用默认值null
+                        // JSON解析异常处理：记录日志并保持配置为null
+                        log.error("顾问配置解析失败 advisorId:{} type:{}", advisorId, aiClientAdvisor.getAdvisorType(), e);
                     }
                 }
 
-                // 4. 构建AiClientAdvisorVO对象
+                // 4. 构建值对象
                 AiClientAdvisorVO advisorVO = AiClientAdvisorVO.builder()
                         .advisorId(aiClientAdvisor.getAdvisorId())
-                        .advisorName(aiClientAdvisor.getAdvisorName())
-                        .advisorType(aiClientAdvisor.getAdvisorType())
-                        .orderNum(aiClientAdvisor.getOrderNum())
-                        .chatMemory(chatMemory)
-                        .ragAnswer(ragAnswer)
+                        .advisorName(aiClientAdvisor.getAdvisorName()) // 顾问名称
+                        .advisorType(aiClientAdvisor.getAdvisorType()) // 顾问类型
+                        .orderNum(aiClientAdvisor.getOrderNum())        // 执行顺序
+                        .chatMemory(chatMemory)                         // 对话记忆配置
+                        .ragAnswer(ragAnswer)                           // RAG回答配置
                         .build();
 
                 result.add(advisorVO);
