@@ -80,6 +80,7 @@
             <groupId>cn.yang</groupId>
             <artifactId>ai-agent-station-study-types</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

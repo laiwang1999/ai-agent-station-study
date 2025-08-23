@@ -1,7 +1,7 @@
 package cn.yang.domain.agent.service.armory;
 
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
-import cn.yang.domain.agent.model.valobj.AiAgentEnumVO;
+import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
 import cn.yang.domain.agent.model.valobj.AiClientToolMcpVO;
 import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;

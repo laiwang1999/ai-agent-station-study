@@ -1,7 +1,7 @@
-package cn.yang.test.domain;
+package cn.yang.test.spring.ai.domain;
 
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
-import cn.yang.domain.agent.model.valobj.AiAgentEnumVO;
+import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
 import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
 import com.alibaba.fastjson.JSON;
@@ -9,6 +9,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -19,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -33,10 +35,9 @@ public class AgentTest {
 
     @Test
     public void test_aiClientApiNode() throws Exception {
-        // 初始装配，拿到根节点
         StrategyHandler<ArmoryCommandEntity, DefaultArmoryStrategyFactory.DynamicContext, String> armoryStrategyHandler =
                 defaultArmoryStrategyFactory.armoryStrategyHandler();
-        // 执行装配逻辑
+
         String apply = armoryStrategyHandler.apply(
                 ArmoryCommandEntity.builder()
                         .commandType(AiAgentEnumVO.AI_CLIENT.getCode())
@@ -70,13 +71,38 @@ public class AgentTest {
         Prompt prompt = Prompt.builder()
                 .messages(new UserMessage(
                         """
-                                在 C:\\Users\\void\\Desktop 创建 txt.md 文件
+                                有哪些工具可以使用
                                 """))
                 .build();
 
         ChatResponse chatResponse = openAiChatModel.call(prompt);
 
         log.info("测试结果(call):{}", JSON.toJSONString(chatResponse));
+    }
+
+    @Test
+    public void test_aiClient() throws Exception {
+        StrategyHandler<ArmoryCommandEntity, DefaultArmoryStrategyFactory.DynamicContext, String> armoryStrategyHandler =
+                defaultArmoryStrategyFactory.armoryStrategyHandler();
+
+        String apply = armoryStrategyHandler.apply(
+                ArmoryCommandEntity.builder()
+                        .commandType(AiAgentEnumVO.AI_CLIENT.getCode())
+                        .commandIdList(Arrays.asList("3001"))
+                        .build(),
+                new DefaultArmoryStrategyFactory.DynamicContext());
+
+        ChatClient chatClient = (ChatClient) applicationContext.getBean(AiAgentEnumVO.AI_CLIENT.getBeanName("3001"));
+        log.info("客户端构建:{}", chatClient);
+
+        String content = chatClient.prompt(Prompt.builder()
+                .messages(new UserMessage(
+                        """
+                                有哪些工具可以使用
+                                """))
+                .build()).call().content();
+
+        log.info("测试结果(call):{}", content);
     }
 
 }

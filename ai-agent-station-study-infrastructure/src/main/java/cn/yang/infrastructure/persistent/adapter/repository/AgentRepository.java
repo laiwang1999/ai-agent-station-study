@@ -12,8 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static cn.yang.domain.agent.model.valobj.AiAgentEnumVO.*;
+import static cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO.*;
 
 /**
  * AiAgent 仓储服务
@@ -275,6 +276,27 @@ public class AgentRepository implements IAgentRepository {
     }
 
     @Override
+    public Map<String, AiClientSystemPromptVO> queryAiClientSystemPromptMapByClientIds(List<String> clientIdList) {
+        List<AiClientSystemPromptVO> aiClientSystemPrompts = AiClientSystemPromptVOByClientIds(clientIdList);
+
+        if (null == aiClientSystemPrompts || aiClientSystemPrompts.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 将PO对象转换为VO对象，并构建Map结构
+        return aiClientSystemPrompts.stream()
+                .map(prompt -> AiClientSystemPromptVO.builder()
+                        .promptId(prompt.getPromptId())
+                        .promptContent(prompt.getPromptContent())
+                        .build())
+                .collect(Collectors.toMap(
+                        AiClientSystemPromptVO::getPromptId,  // key: id
+                        prompt -> prompt,               // value: AiClientSystemPromptVO对象
+                        (existing, replacement) -> existing  // 如果有重复key，保留第一个
+                ));
+    }
+
+    @Override
     public List<AiClientAdvisorVO> AiClientAdvisorVOByClientIds(List<String> clientIdList) {
         if (clientIdList == null || clientIdList.isEmpty()) {
             return List.of();
@@ -473,5 +495,44 @@ public class AgentRepository implements IAgentRepository {
 
         return result;
     }
+
+    @Override
+    public Map<String, AiAgentClientFlowConfigVO> queryAiAgentClientFlowConfig(String aiAgentId) {
+        if (aiAgentId == null || aiAgentId.trim().isEmpty()) {
+            return Map.of();
+        }
+
+        try {
+            // 根据智能体ID查询流程配置列表
+            List<AiAgentFlowConfig> flowConfigs = aiAgentFlowConfigDao.queryByAgentId(aiAgentId);
+
+            if (flowConfigs == null || flowConfigs.isEmpty()) {
+                return Map.of();
+            }
+
+            // 转换为Map结构，key为clientId，value为AiAgentClientFlowConfigVO
+            Map<String, AiAgentClientFlowConfigVO> result = new HashMap<>();
+
+            for (AiAgentFlowConfig flowConfig : flowConfigs) {
+                AiAgentClientFlowConfigVO configVO = AiAgentClientFlowConfigVO.builder()
+                        .clientId(flowConfig.getClientId())
+                        .clientName(flowConfig.getClientName())
+                        .clientType(flowConfig.getClientType())
+                        .sequence(flowConfig.getSequence())
+                        .build();
+
+                result.put(flowConfig.getClientType(), configVO);
+            }
+
+            return result;
+        } catch (NumberFormatException e) {
+            log.error("Invalid aiAgentId format: {}", aiAgentId, e);
+            return Map.of();
+        } catch (Exception e) {
+            log.error("Query ai agent client flow config failed, aiAgentId: {}", aiAgentId, e);
+            return Map.of();
+        }
+    }
+
 
 }

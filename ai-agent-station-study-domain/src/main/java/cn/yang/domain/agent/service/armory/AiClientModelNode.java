@@ -1,7 +1,7 @@
 package cn.yang.domain.agent.service.armory;
 
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
-import cn.yang.domain.agent.model.valobj.AiAgentEnumVO;
+import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
 import cn.yang.domain.agent.model.valobj.AiClientModelVO;
 import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
@@ -14,6 +14,7 @@ import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import java.util.List;
 @Slf4j
 @Service
 public class AiClientModelNode extends AbstractArmorySupport {
+    @Resource
+    private AiClientAdvisorNode aiClientAdvisorNode;
 
     @Override
     protected String doApply(ArmoryCommandEntity requestParameter, DefaultArmoryStrategyFactory.DynamicContext dynamicContext) throws Exception {
@@ -72,7 +75,7 @@ public class AiClientModelNode extends AbstractArmorySupport {
 
     @Override
     public StrategyHandler<ArmoryCommandEntity, DefaultArmoryStrategyFactory.DynamicContext, String> get(ArmoryCommandEntity requestParameter, DefaultArmoryStrategyFactory.DynamicContext dynamicContext) throws Exception {
-        return defaultStrategyHandler;
+        return aiClientAdvisorNode;
     }
 
     @Override

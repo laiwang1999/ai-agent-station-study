@@ -1,4 +1,4 @@
-package cn.yang.domain.agent.model.valobj;
+package cn.yang.domain.agent.model.valobj.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

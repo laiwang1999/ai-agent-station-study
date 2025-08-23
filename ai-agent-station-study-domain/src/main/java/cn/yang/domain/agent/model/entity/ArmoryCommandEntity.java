@@ -1,6 +1,6 @@
 package cn.yang.domain.agent.model.entity;
 
-import cn.yang.domain.agent.model.valobj.AiAgentEnumVO;
+import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 装配命令
+ * 装配命令实体
  *
  * @author xiaofuge bugstack.cn @小傅哥
  * 2025/6/27 07:26

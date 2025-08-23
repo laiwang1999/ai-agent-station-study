@@ -16,17 +16,17 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        try {
-            // 测试表是否存在
-            jdbcTemplate.queryForObject(
-                    "SELECT 1 FROM public.vector_store LIMIT 1",
-                    Integer.class
-            );
-        } catch (Exception e) {
-            log.info("postgresql vector_store表不存在，正在创建...");
-            // 表不存在，创建它
-            initializeVectorStore();
-        }
+//        try {
+//            // 测试表是否存在
+//            jdbcTemplate.queryForObject(
+//                    "SELECT 1 FROM public.vector_store LIMIT 1",
+//                    Integer.class
+//            );
+//        } catch (Exception e) {
+//            log.info("postgresql vector_store表不存在，正在创建...");
+//            // 表不存在，创建它
+//            initializeVectorStore();
+//        }
     }
 
     private void initializeVectorStore() {

@@ -2,7 +2,7 @@ package cn.yang.domain.agent.service.armory;
 
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
-import cn.yang.domain.agent.model.valobj.AiAgentEnumVO;
+import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
 import cn.yang.domain.agent.service.armory.business.data.ILoadDataStrategy;
 import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import com.alibaba.fastjson2.JSON;
