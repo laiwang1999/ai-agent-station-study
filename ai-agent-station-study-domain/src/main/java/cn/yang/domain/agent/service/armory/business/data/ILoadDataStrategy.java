@@ -1,7 +1,7 @@
 package cn.yang.domain.agent.service.armory.business.data;
 
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
-import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
+import cn.yang.domain.agent.service.armory.node.factory.DefaultArmoryStrategyFactory;
 
 /**
  * 数据加载策略

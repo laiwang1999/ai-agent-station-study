@@ -40,6 +40,10 @@
             <groupId>cn.yang</groupId>
             <artifactId>ai-agent-station-study-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cn.yang</groupId>
+            <artifactId>ai-agent-station-study-infrastructure</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

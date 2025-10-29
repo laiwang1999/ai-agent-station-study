@@ -5,7 +5,7 @@ import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
 import cn.yang.domain.agent.model.valobj.AiClientApiVO;
 import cn.yang.domain.agent.model.valobj.AiClientModelVO;
 import cn.yang.domain.agent.service.armory.business.data.ILoadDataStrategy;
-import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
+import cn.yang.domain.agent.service.armory.node.factory.DefaultArmoryStrategyFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

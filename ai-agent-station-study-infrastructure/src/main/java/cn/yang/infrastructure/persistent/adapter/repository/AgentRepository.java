@@ -4,8 +4,8 @@ import cn.yang.domain.agent.adapter.repository.IAgentRepository;
 import cn.yang.domain.agent.model.valobj.*;
 import cn.yang.infrastructure.persistent.dao.*;
 import cn.yang.infrastructure.persistent.po.*;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.TypeReference;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -205,7 +205,8 @@ public class AgentRepository implements IAgentRepository {
                                     if ("sse".equals(transportType)) {
                                         // 解析SSE配置
                                         ObjectMapper objectMapper = new ObjectMapper();
-                                        AiClientToolMcpVO.TransportConfigSse transportConfigSse = objectMapper.readValue(transportConfig, AiClientToolMcpVO.TransportConfigSse.class);
+                                        AiClientToolMcpVO.TransportConfigSse transportConfigSse = objectMapper.readValue(transportConfig,
+                                                AiClientToolMcpVO.TransportConfigSse.class);
                                         mcpVO.setTransportConfigSse(transportConfigSse);
                                     } else if ("stdio".equals(transportType)) {
                                         // 解析STDIO配置
@@ -519,6 +520,7 @@ public class AgentRepository implements IAgentRepository {
                         .clientName(flowConfig.getClientName())
                         .clientType(flowConfig.getClientType())
                         .sequence(flowConfig.getSequence())
+                        .stepPrompt(flowConfig.getStepPrompt())
                         .build();
 
                 result.put(flowConfig.getClientType(), configVO);
@@ -533,6 +535,107 @@ public class AgentRepository implements IAgentRepository {
             return Map.of();
         }
     }
+
+    @Override
+    public AiAgentVO queryAiAgentByAgentId(String aiAgentId) {
+        AiAgent aiAgent = aiAgentDao.queryByAgentId(aiAgentId);
+        return AiAgentVO.builder()
+                .agentId(aiAgent.getAgentId())
+                .agentName(aiAgent.getAgentName())
+                .description(aiAgent.getDescription())
+                .channel(aiAgent.getChannel())
+                .strategy(aiAgent.getStrategy())
+                .status(aiAgent.getStatus())
+                .build();
+    }
+
+    @Override
+    public List<AiAgentClientFlowConfigVO> queryAIAgentClientByAgentId(String aiAgentId) {
+        List<AiAgentClientFlowConfigVO> aiAgentClientFlowConfigVOS = new ArrayList<>();
+
+        List<AiAgentFlowConfig> flowConfigs = aiAgentFlowConfigDao.queryByAgentId(aiAgentId);
+        for (AiAgentFlowConfig flowConfig : flowConfigs) {
+            AiAgentClientFlowConfigVO configVO = AiAgentClientFlowConfigVO.builder()
+                    .clientId(flowConfig.getClientId())
+                    .clientName(flowConfig.getClientName())
+                    .clientType(flowConfig.getClientType())
+                    .sequence(flowConfig.getSequence())
+                    .stepPrompt(flowConfig.getStepPrompt())
+                    .build();
+            aiAgentClientFlowConfigVOS.add(configVO);
+        }
+        return aiAgentClientFlowConfigVOS;
+    }
+
+    @Override
+    public List<AiAgentTaskScheduleVO> queryAllValidTaskSchedule() {
+        List<AiAgentTaskSchedule> aiAgentTaskSchedules = aiAgentTaskScheduleDao.queryAllValidTaskSchedule();
+        List<AiAgentTaskScheduleVO> result = new ArrayList<>();
+        for(AiAgentTaskSchedule aiAgentTaskSchedule : aiAgentTaskSchedules){
+            AiAgentTaskScheduleVO vo = AiAgentTaskScheduleVO.builder()
+                    .id(aiAgentTaskSchedule.getId())
+                    .agentId(aiAgentTaskSchedule.getAgentId())
+                    .description(aiAgentTaskSchedule.getDescription())
+                    .cronExpression(aiAgentTaskSchedule.getCronExpression())
+                    .taskParam(aiAgentTaskSchedule.getTaskParam())
+                    .build();
+            result.add(vo);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Long> queryAllInvalidTaskScheduleIds() {
+        return aiAgentTaskScheduleDao.queryAllInvalidTaskScheduleIds();
+    }
+
+
+    @Override
+    public void createTagOrder(AiRagOrderVO aiRagOrderVO) {
+        AiClientRagOrder aiRagOrder = new AiClientRagOrder();
+        aiRagOrder.setRagName(aiRagOrderVO.getRagName());
+        aiRagOrder.setKnowledgeTag(aiRagOrderVO.getKnowledgeTag());
+        aiRagOrder.setStatus(1);
+        aiClientRagOrderDao.insert(aiRagOrder);
+    }
+
+    @Override
+    public List<AiAgentVO> queryAvailableAgents() {
+        List<AiAgent> aiAgents = aiAgentDao.queryEnabledAgents();
+        List<AiAgentVO> aiAgentVOS = new ArrayList<>();
+        for (AiAgent aiAgent : aiAgents) {
+            aiAgentVOS.add(AiAgentVO.builder()
+                    .agentId(aiAgent.getAgentId())
+                    .agentName(aiAgent.getAgentName())
+                    .description(aiAgent.getDescription())
+                    .channel(aiAgent.getChannel())
+                    .strategy(aiAgent.getStrategy())
+                    .status(aiAgent.getStatus())
+                    .build());
+        }
+        return aiAgentVOS;
+    }
+    @Override
+    public List<AiAgentClientFlowConfigVO> queryAiAgentClientsByAgentId(String aiAgentId) {
+        List<AiAgentClientFlowConfigVO> aiAgentClientFlowConfigVOS = new ArrayList<>();
+
+        List<AiAgentFlowConfig> flowConfigs = aiAgentFlowConfigDao.queryByAgentId(aiAgentId);
+        for (AiAgentFlowConfig flowConfig : flowConfigs) {
+            AiAgentClientFlowConfigVO configVO = AiAgentClientFlowConfigVO.builder()
+                    .clientId(flowConfig.getClientId())
+                    .clientName(flowConfig.getClientName())
+                    .clientType(flowConfig.getClientType())
+                    .sequence(flowConfig.getSequence())
+                    .stepPrompt(flowConfig.getStepPrompt())
+                    .build();
+
+            aiAgentClientFlowConfigVOS.add(configVO);
+        }
+
+        return aiAgentClientFlowConfigVOS;
+    }
+
 
 
 }

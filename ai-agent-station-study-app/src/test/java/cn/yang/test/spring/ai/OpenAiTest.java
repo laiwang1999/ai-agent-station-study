@@ -66,6 +66,8 @@ public class OpenAiTest {
     @Autowired
     private OpenAiChatModel openAiChatModel;
 
+    @Value("classpath:data/grafana-mcp-tools-guide.md")
+    private Resource grafanaMcpToolsGuideResource;
     /**
      * PGVector向量存储实例
      */
@@ -154,11 +156,12 @@ public class OpenAiTest {
     @Test
     public void upload() {
         // textResource、articlePromptWordsResource
-        TikaDocumentReader reader = new TikaDocumentReader(textResource);
+
+        TikaDocumentReader reader = new TikaDocumentReader(grafanaMcpToolsGuideResource);
         List<Document> documents = reader.get();
         List<Document> documentSplitterList = tokenTextSplitter.apply(documents);
 
-        documentSplitterList.forEach(doc -> doc.getMetadata().put("knowledge", "知识库名称-v4"));
+        documentSplitterList.forEach(doc -> doc.getMetadata().put("knowledge", "grafana-mcp-tools-guide"));
 
         pgVectorStore.accept(documentSplitterList);
 

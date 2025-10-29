@@ -31,4 +31,18 @@ public interface IAgentRepository {
     List<AiClientModelVO> AiClientModelVOByModelIds(List<String> modelIdList);
 
     Map<String, AiAgentClientFlowConfigVO> queryAiAgentClientFlowConfig(String aiAgentId);
+
+    AiAgentVO queryAiAgentByAgentId(String aiAgentId);
+
+    List<AiAgentClientFlowConfigVO> queryAIAgentClientByAgentId(String aiAgentId);
+
+    List<AiAgentTaskScheduleVO> queryAllValidTaskSchedule();
+
+    List<Long> queryAllInvalidTaskScheduleIds();
+
+    List<AiAgentVO> queryAvailableAgents();
+
+    List<AiAgentClientFlowConfigVO> queryAiAgentClientsByAgentId(String agentId);
+
+    void createTagOrder(AiRagOrderVO aiRagOrderVO);
 }

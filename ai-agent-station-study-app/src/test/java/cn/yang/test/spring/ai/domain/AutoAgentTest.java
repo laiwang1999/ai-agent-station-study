@@ -3,7 +3,7 @@ package cn.yang.test.spring.ai.domain;
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
 import cn.yang.domain.agent.model.entity.ExecuteCommandEntity;
 import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
-import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
+import cn.yang.domain.agent.service.armory.node.factory.DefaultArmoryStrategyFactory;
 import cn.yang.domain.agent.service.execute.auto.step.factory.DefaultAutoAgentExecuteStrategyFactory;
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
 import jakarta.annotation.Resource;

@@ -2,7 +2,7 @@ package cn.yang.test.spring.ai.domain;
 
 import cn.yang.domain.agent.model.entity.ArmoryCommandEntity;
 import cn.yang.domain.agent.model.valobj.enums.AiAgentEnumVO;
-import cn.yang.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
+import cn.yang.domain.agent.service.armory.node.factory.DefaultArmoryStrategyFactory;
 import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
 import com.alibaba.fastjson.JSON;
 import jakarta.annotation.Resource;

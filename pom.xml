@@ -133,6 +133,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- https://mvnrepository.com/artifact/cn.bugstack.wrench/xfg-wrench-starter-task-job -->
+<!--            <dependency>-->
+<!--                <groupId>cn.bugstack.wrench</groupId>-->
+<!--                <artifactId>xfg-wrench-starter-task-job</artifactId>-->
+<!--                <version>3.1.0</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
             <!-- 工程模块 -->
             <dependency>
                 <groupId>cn.yang</groupId>
